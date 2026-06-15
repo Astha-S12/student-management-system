@@ -15,30 +15,9 @@ def about():
     return render_template('about.html')
 
 # ---------------- STUDENTS (CREATE + READ) ----------------
-@app.route('/students', methods=['GET', 'POST'])
+@app.route('/students')
 def students():
-
-    conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
-
-    if request.method == 'POST':
-        name = request.form['name']
-        email = request.form['email']
-
-        cursor.execute(
-            "INSERT INTO students (name, email) VALUES (%s, %s)",
-            (name, email)
-        )
-        conn.commit()
-
-        return redirect('/students')
-
-    cursor.execute("SELECT * FROM students")
-    students_list = cursor.fetchall()
-
-    conn.close()
-
-    return render_template('students.html', students=students_list)
+    return "Flask is working, DB is the issue"
 
 # ---------------- DELETE ----------------
 @app.route('/delete/<int:id>')
