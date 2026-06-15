@@ -7,8 +7,7 @@ app = Flask(__name__)
 # ---------------- HOME ----------------
 @app.route('/')
 def home():
-    return "Flask is working on Render"
-
+    return render_template('index.html')
 # ---------------- ABOUT ----------------
 @app.route('/about')
 def about():
