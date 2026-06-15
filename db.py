@@ -1,10 +1,11 @@
-import mysql.connector
+import pymysql
 
 def get_db_connection():
-    return mysql.connector.connect(
-        host="localhost",
+    return pymysql.connect(
+        host="${{RAILWAY_PRIVATE_DOMAIN}}",
         user="root",
-        password="Asth@123",
-        database="school"
+        password="${{MYSQL_ROOT_PASSWORD}}",
+        database="${{MYSQL_DATABASE}}",
+        port=3306,
+        cursorclass=pymysql.cursors.DictCursor
     )
-    
