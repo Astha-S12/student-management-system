@@ -1,11 +1,19 @@
 import pymysql
 
 def get_db_connection():
-    return pymysql.connect(
-        host="${{RAILWAY_PRIVATE_DOMAIN}}",
-        user="root",
-        password="${{MYSQL_ROOT_PASSWORD}}",
-        database="${{MYSQL_DATABASE}}",
-        port=3306,
-        cursorclass=pymysql.cursors.DictCursor
-    )
+    try:
+        conn = pymysql.connect(
+            host="mysql.railway.internal",
+            user="root",
+            password="DnLawNxZzqsGzPXWSWHLksNGkUtIkqFG",
+            database="railway",
+            port=3306,
+            cursorclass=pymysql.cursors.DictCursor
+        )
+        print("✅ DB CONNECTED")
+        return conn
+
+    except Exception as e:
+        print("❌ DB ERROR:", e)
+        return None
+    
