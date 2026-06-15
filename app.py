@@ -51,8 +51,14 @@ def delete_student(id):
     return redirect('/students')
 
 
+from flask import Flask, render_template, request, redirect
+from db import get_db_connection
 import os
 
-if __name__ == '__main__':
+app = Flask(__name__)
+
+# all your routes here (unchanged)
+
+if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
-    app.run(host='0.0.0.0', port=port)
+    app.run(host="0.0.0.0", port=port)
