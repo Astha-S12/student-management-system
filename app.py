@@ -16,7 +16,7 @@ def about():
 # ---------------- STUDENTS (CREATE + READ) ----------------
 @app.route('/students')
 def students():
-    return "Flask is working, DB is the issue"
+    conn = get_db_connection()  # ❌ THIS FAILS
 
 # ---------------- DELETE ----------------
 @app.route('/delete/<int:id>')
