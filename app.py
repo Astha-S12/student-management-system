@@ -8,15 +8,38 @@ app = Flask(__name__)
 @app.route('/')
 def home():
     return render_template('index.html')
+
 # ---------------- ABOUT ----------------
 @app.route('/about')
 def about():
     return render_template('about.html')
 
 # ---------------- STUDENTS (CREATE + READ) ----------------
-@app.route('/students')
+@app.route('/students', methods=['GET', 'POST'])
 def students():
-    conn = get_db_connection()  # ❌ THIS FAILS
+
+    conn = get_db_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    # INSERT student
+    if request.method == 'POST':
+        name = request.form['name']
+        email = request.form['email']
+
+        cursor.execute(
+            "INSERT INTO students (name, email) VALUES (%s, %s)",
+            (name, email)
+        )
+        conn.commit()
+        return redirect('/students')
+
+    # FETCH students
+    cursor.execute("SELECT * FROM students")
+    students_list = cursor.fetchall()
+
+    conn.close()
+
+    return render_template('students.html', students=students_list)
 
 # ---------------- DELETE ----------------
 @app.route('/delete/<int:id>')
