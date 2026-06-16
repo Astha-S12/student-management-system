@@ -9,21 +9,18 @@ app = Flask(__name__)
 def home():
     return render_template('index.html')
 
-
 # ---------------- ABOUT ----------------
 @app.route('/about')
 def about():
     return render_template('about.html')
 
-
-# ---------------- STUDENTS (CREATE + READ + SEARCH) ----------------
+# ---------------- STUDENTS ----------------
 @app.route('/students', methods=['GET', 'POST'])
 def students():
 
     conn = get_db_connection()
     cursor = conn.cursor()
 
-    # CREATE
     if request.method == 'POST':
         name = request.form['name']
         email = request.form['email']
@@ -38,7 +35,6 @@ def students():
 
         return redirect('/students')
 
-    # SEARCH
     search = request.args.get('search')
 
     if search:
@@ -58,7 +54,6 @@ def students():
         students=students_list
     )
 
-
 # ---------------- DELETE ----------------
 @app.route('/delete/<int:id>')
 def delete_student(id):
@@ -76,8 +71,7 @@ def delete_student(id):
 
     return redirect('/students')
 
-
-# ---------------- EDIT PAGE ----------------
+# ---------------- EDIT ----------------
 @app.route('/edit/<int:id>')
 def edit_student(id):
 
@@ -97,7 +91,6 @@ def edit_student(id):
         'edit_student.html',
         student=student
     )
-
 
 # ---------------- UPDATE ----------------
 @app.route('/update/<int:id>', methods=['POST'])
@@ -123,7 +116,6 @@ def update_student(id):
 
     return redirect('/students')
 
-
 # ---------------- TEST ----------------
 @app.route('/test')
 def test():
@@ -137,7 +129,6 @@ def test():
     conn.close()
 
     return str(data)
-
 
 # ---------------- RUN APP ----------------
 if __name__ == "__main__":
