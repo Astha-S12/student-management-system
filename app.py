@@ -1,7 +1,10 @@
-from flask import Flask, render_template, request, redirect, session, url_for
+import os
+from flask import Flask, render_template, request, redirect, session, flash
 from db import get_db_connection
+
 app = Flask(__name__)
 app.secret_key = "your_secret_key_here"
+
 
 # ---------------- HOME ----------------
 @app.route('/')
@@ -19,14 +22,14 @@ def about():
 @app.route('/students', methods=['GET', 'POST'])
 def students():
 
-    # 🔐 LOGIN CHECK (must be first)
+    # Login protection
     if not session.get('logged_in'):
         return redirect('/login')
 
     conn = get_db_connection()
     cursor = conn.cursor()
 
-    # ADD STUDENT
+    # Add student
     if request.method == 'POST':
 
         name = request.form['name']
@@ -39,16 +42,21 @@ def students():
 
         conn.commit()
         conn.close()
+
         return redirect('/students')
 
-    # GET ALL STUDENTS
+    # Get students
     cursor.execute("SELECT * FROM students")
     students_list = cursor.fetchall()
 
-    # ANALYTICS
     total_students = len(students_list)
-    gmail_users = sum(1 for s in students_list if "@gmail.com" in s["email"].lower())
-    total_records = total_students
+
+    gmail_users = sum(
+        1 for student in students_list
+        if "@gmail.com" in student["email"].lower()
+    )
+
+    non_gmail_users = total_students - gmail_users
 
     conn.close()
 
@@ -57,12 +65,17 @@ def students():
         students=students_list,
         total_students=total_students,
         gmail_users=gmail_users,
-        total_records=total_records
+        non_gmail_users=non_gmail_users,
+        total_records=total_students
     )
+
 
 # ---------------- DELETE STUDENT ----------------
 @app.route('/delete/<int:id>')
 def delete_student(id):
+
+    if not session.get('logged_in'):
+        return redirect('/login')
 
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -78,9 +91,12 @@ def delete_student(id):
     return redirect('/students')
 
 
-# ---------------- EDIT PAGE ----------------
+# ---------------- EDIT STUDENT ----------------
 @app.route('/edit/<int:id>')
 def edit_student(id):
+
+    if not session.get('logged_in'):
+        return redirect('/login')
 
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -104,6 +120,9 @@ def edit_student(id):
 @app.route('/update/<int:id>', methods=['POST'])
 def update_student(id):
 
+    if not session.get('logged_in'):
+        return redirect('/login')
+
     name = request.form['name']
     email = request.form['email']
 
@@ -125,6 +144,7 @@ def update_student(id):
 
     return redirect('/students')
 
+
 # ---------------- LOGIN ----------------
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -132,6 +152,7 @@ def login():
     error = None
 
     if request.method == 'POST':
+
         username = request.form['username']
         password = request.form['password']
 
@@ -144,21 +165,36 @@ def login():
         )
 
         admin = cursor.fetchone()
+
         conn.close()
 
         if admin:
+
             session['logged_in'] = True
             session['username'] = username
+
+            flash("Login successful!", "success")
+
             return redirect('/students')
+
         else:
             error = "Invalid username or password"
 
     return render_template('login.html', error=error)
+
+
+# ---------------- LOGOUT ----------------
 @app.route('/logout')
 def logout():
+
     session.pop('logged_in', None)
     session.pop('username', None)
+
+    flash("Logged out successfully!", "info")
+
     return redirect('/login')
+
+
 # ---------------- TEST DATABASE ----------------
 @app.route('/test')
 def test():
@@ -182,4 +218,4 @@ if __name__ == "__main__":
     app.run(
         host="0.0.0.0",
         port=port
-    )           
+    )
