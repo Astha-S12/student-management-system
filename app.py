@@ -19,7 +19,7 @@ def about():
 def students():
 
     conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
+    cursor = conn.cursor()
 
     # INSERT student
     if request.method == 'POST':
