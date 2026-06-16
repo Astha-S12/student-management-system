@@ -19,6 +19,10 @@ def about():
 @app.route('/students', methods=['GET', 'POST'])
 def students():
 
+    # 🔐 LOGIN CHECK (must be first)
+    if not session.get('logged_in'):
+        return redirect('/login')
+
     conn = get_db_connection()
     cursor = conn.cursor()
 
@@ -35,7 +39,6 @@ def students():
 
         conn.commit()
         conn.close()
-
         return redirect('/students')
 
     # GET ALL STUDENTS
@@ -44,13 +47,7 @@ def students():
 
     # ANALYTICS
     total_students = len(students_list)
-
-    gmail_users = 0
-
-    for student in students_list:
-        if "@gmail.com" in student["email"].lower():
-            gmail_users += 1
-
+    gmail_users = sum(1 for s in students_list if "@gmail.com" in s["email"].lower())
     total_records = total_students
 
     conn.close()
@@ -62,7 +59,6 @@ def students():
         gmail_users=gmail_users,
         total_records=total_records
     )
-
 
 # ---------------- DELETE STUDENT ----------------
 @app.route('/delete/<int:id>')
@@ -155,13 +151,6 @@ def login():
             return "Invalid credentials"
 
     return render_template('login.html')
-
-# ---------------- LOGOUT ----------------
-@app.route('/students', methods=['GET', 'POST'])
-def students():
-
-    if not session.get('logged_in'):
-        return redirect('/login')
 
 # ---------------- TEST DATABASE ----------------
 @app.route('/test')
