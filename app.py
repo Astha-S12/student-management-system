@@ -136,25 +136,32 @@ def login():
         username = request.form['username']
         password = request.form['password']
 
-        cursor = mysql.connection.cursor()
-        cursor.execute("SELECT * FROM admin WHERE username=%s AND password=%s",
-                       (username, password))
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        cursor.execute(
+            "SELECT * FROM admin WHERE username=%s AND password=%s",
+            (username, password)
+        )
+
         admin = cursor.fetchone()
+        conn.close()
 
         if admin:
             session['logged_in'] = True
             session['username'] = username
-            return redirect('/dashboard')
+            return redirect('/students')   # IMPORTANT FIX
         else:
             return "Invalid credentials"
 
     return render_template('login.html')
 
 # ---------------- LOGOUT ----------------
-@app.route('/logout')
-def logout():
-    session.clear()
-    return redirect('/login')
+@app.route('/students', methods=['GET', 'POST'])
+def students():
+
+    if not session.get('logged_in'):
+        return redirect('/login')
 
 # ---------------- TEST DATABASE ----------------
 @app.route('/test')
