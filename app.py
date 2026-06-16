@@ -9,19 +9,23 @@ app = Flask(__name__)
 def home():
     return render_template('index.html')
 
+
 # ---------------- ABOUT ----------------
 @app.route('/about')
 def about():
     return render_template('about.html')
 
-# ---------------- STUDENTS ----------------
+
+# ---------------- STUDENTS DASHBOARD ----------------
 @app.route('/students', methods=['GET', 'POST'])
 def students():
 
     conn = get_db_connection()
     cursor = conn.cursor()
 
+    # ADD STUDENT
     if request.method == 'POST':
+
         name = request.form['name']
         email = request.form['email']
 
@@ -35,26 +39,33 @@ def students():
 
         return redirect('/students')
 
-    search = request.args.get('search')
-
-    if search:
-        cursor.execute(
-            "SELECT * FROM students WHERE name LIKE %s",
-            (f"%{search}%",)
-        )
-    else:
-        cursor.execute("SELECT * FROM students")
-
+    # GET ALL STUDENTS
+    cursor.execute("SELECT * FROM students")
     students_list = cursor.fetchall()
+
+    # ANALYTICS
+    total_students = len(students_list)
+
+    gmail_users = 0
+
+    for student in students_list:
+        if "@gmail.com" in student["email"].lower():
+            gmail_users += 1
+
+    total_records = total_students
 
     conn.close()
 
     return render_template(
         'students.html',
-        students=students_list
+        students=students_list,
+        total_students=total_students,
+        gmail_users=gmail_users,
+        total_records=total_records
     )
 
-# ---------------- DELETE ----------------
+
+# ---------------- DELETE STUDENT ----------------
 @app.route('/delete/<int:id>')
 def delete_student(id):
 
@@ -71,7 +82,8 @@ def delete_student(id):
 
     return redirect('/students')
 
-# ---------------- EDIT ----------------
+
+# ---------------- EDIT PAGE ----------------
 @app.route('/edit/<int:id>')
 def edit_student(id):
 
@@ -92,7 +104,8 @@ def edit_student(id):
         student=student
     )
 
-# ---------------- UPDATE ----------------
+
+# ---------------- UPDATE STUDENT ----------------
 @app.route('/update/<int:id>', methods=['POST'])
 def update_student(id):
 
@@ -105,7 +118,8 @@ def update_student(id):
     cursor.execute(
         """
         UPDATE students
-        SET name=%s, email=%s
+        SET name=%s,
+            email=%s
         WHERE id=%s
         """,
         (name, email, id)
@@ -116,7 +130,8 @@ def update_student(id):
 
     return redirect('/students')
 
-# ---------------- TEST ----------------
+
+# ---------------- TEST DATABASE ----------------
 @app.route('/test')
 def test():
 
@@ -130,7 +145,13 @@ def test():
 
     return str(data)
 
+
 # ---------------- RUN APP ----------------
 if __name__ == "__main__":
+
     port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port)
+
+    app.run(
+        host="0.0.0.0",
+        port=port
+    )
