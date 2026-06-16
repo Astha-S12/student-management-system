@@ -1,7 +1,8 @@
 import os
 from flask import Flask, render_template, request, redirect, session, flash
 from db import get_db_connection
-
+import csv
+from flask import Response
 app = Flask(__name__)
 app.secret_key = "your_secret_key_here"
 
@@ -194,6 +195,31 @@ def logout():
 
     return redirect('/login')
 
+# ---------------- EXPORT CSV ----------------
+@app.route('/export/csv')
+def export_csv():
+
+    if not session.get('logged_in'):
+        return redirect('/login')
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT * FROM students")
+    students = cursor.fetchall()
+
+    conn.close()
+
+    output = "id,name,email\n"
+
+    for s in students:
+        output += f"{s['id']},{s['name']},{s['email']}\n"
+
+    return Response(
+        output,
+        mimetype="text/csv",
+        headers={"Content-Disposition": "attachment;filename=students.csv"}
+    )
 
 # ---------------- TEST DATABASE ----------------
 @app.route('/test')
