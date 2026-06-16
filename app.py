@@ -1,8 +1,7 @@
-from flask import Flask, render_template, request, redirect
+from flask import Flask, render_template, request, redirect, session, url_for
 from db import get_db_connection
-import os
-
 app = Flask(__name__)
+app.secret_key = "your_secret_key_here"
 
 # ---------------- HOME ----------------
 @app.route('/')
@@ -130,6 +129,32 @@ def update_student(id):
 
     return redirect('/students')
 
+# ---------------- LOGIN ----------------
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+
+        cursor = mysql.connection.cursor()
+        cursor.execute("SELECT * FROM admin WHERE username=%s AND password=%s",
+                       (username, password))
+        admin = cursor.fetchone()
+
+        if admin:
+            session['logged_in'] = True
+            session['username'] = username
+            return redirect('/dashboard')
+        else:
+            return "Invalid credentials"
+
+    return render_template('login.html')
+
+# ---------------- LOGOUT ----------------
+@app.route('/logout')
+def logout():
+    session.clear()
+    return redirect('/login')
 
 # ---------------- TEST DATABASE ----------------
 @app.route('/test')
