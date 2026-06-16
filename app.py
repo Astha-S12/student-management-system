@@ -128,6 +128,9 @@ def update_student(id):
 # ---------------- LOGIN ----------------
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+
+    error = None
+
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
@@ -146,12 +149,16 @@ def login():
         if admin:
             session['logged_in'] = True
             session['username'] = username
-            return redirect('/students')   # IMPORTANT FIX
+            return redirect('/students')
         else:
-            return "Invalid credentials"
+            error = "Invalid username or password"
 
-    return render_template('login.html')
-
+    return render_template('login.html', error=error)
+@app.route('/logout')
+def logout():
+    session.pop('logged_in', None)
+    session.pop('username', None)
+    return redirect('/login')
 # ---------------- TEST DATABASE ----------------
 @app.route('/test')
 def test():
@@ -175,4 +182,4 @@ if __name__ == "__main__":
     app.run(
         host="0.0.0.0",
         port=port
-    )
+    )           
